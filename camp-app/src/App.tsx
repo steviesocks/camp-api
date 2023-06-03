@@ -22,7 +22,7 @@ function App() {
 
   return (
     <Container fluid className="h-screen bg-slate-500 m-0 " display="flex" justify="center" alignItems="center">
-      {data.map(req => (<Row><Text>{req.dateTime</Text></Row>))}
+      {data.map(req => (<Row><Text>{req.dateTime}</Text><Text>Remaining:</Text></Row>))}
     </Container>
   );
 }

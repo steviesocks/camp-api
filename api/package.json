@@ -6,7 +6,8 @@
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "prestart": "npm run build",
-    "start": "nodemon ./src/index.ts"
+    "start": "node ./src/index.ts",
+    "dev": "nodemon ./src/index.ts"
   },
   "repository": {
     "type": "git",
