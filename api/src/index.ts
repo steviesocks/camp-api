@@ -86,4 +86,7 @@ app.get("/requests", async (req, res) => {
 //      return res.status(500).send("server error")
 //     }
 // })
+
+console.log("RUN!")
+
 app.listen(process.env.PORT || 3000);
