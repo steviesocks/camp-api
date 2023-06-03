@@ -62,7 +62,7 @@ app.get("/requests", async (req, res) => {
   const response: ApiRequests[] = [];
 
   docs.forEach(doc => response.push(doc.data()))
-  
+
   console.log("REQUESTS", response)
   return res.status(200).send(response)
 })

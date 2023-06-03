@@ -47,18 +47,6 @@ app.use((0, cors_1.default)());
 // Import the functions you need from the SDKs you need
 var app_1 = require("firebase/app");
 var lite_1 = require("firebase/firestore/lite");
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-// Your web app's Firebase configuration
-// const firebaseConfig = {
-//   apiKey: "AIzaSyCHn5Hc3YSyFDPIkJAuagznlOY_T-5936w",
-//   authDomain: "campsite-che.firebaseapp.com",
-//   projectId: "campsite-che",
-//   storageBucket: "campsite-che.appspot.com",
-//   messagingSenderId: "8110544532",
-//   appId: "1:8110544532:web:c8f811b42d0c7c160f4681"
-// };
-// Initialize Firebase
 // Initialize Firestore through Firebase
 var firebaseConfig = {
     apiKey: "AIzaSyCHn5Hc3YSyFDPIkJAuagznlOY_T-5936w",
@@ -70,7 +58,17 @@ var firebaseConfig = {
 };
 var firebaseApp = (0, app_1.initializeApp)(firebaseConfig);
 var db = (0, lite_1.getFirestore)(firebaseApp);
-setInterval(function () { return __awaiter(void 0, void 0, void 0, function () {
+var converter = {
+    toFirestore: function (data) { return data; },
+    fromFirestore: function (snap) {
+        return snap.data();
+    }
+};
+app.all("/", function (req, res) {
+    // console.log("Just got a request!")
+    res.send("Yo!");
+});
+app.get("/chron", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var response, filteredDates, availability_1, requests, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -83,7 +81,6 @@ setInterval(function () { return __awaiter(void 0, void 0, void 0, function () {
                     return ["2023-08-11", "2023-08-12"].includes(entry[0]);
                 });
                 if (!filteredDates.length) return [3 /*break*/, 3];
-                console.log("AVAILABILITY", filteredDates);
                 availability_1 = {};
                 filteredDates.forEach(function (date) {
                     availability_1[date[0]] = { total: date[1].total, remaining: date[1].remaining };
@@ -101,20 +98,24 @@ setInterval(function () { return __awaiter(void 0, void 0, void 0, function () {
             case 5: return [2 /*return*/];
         }
     });
-}); }, 60000);
-// const RIDB_API_KEY = "0247a97d-3793-409b-9fad-bde619422120";
-// interface RIDBRequestHeaders extends AxiosRequestHeaders {
-//   'apikey': string;
-// }
-// scrape();
-app.all("/", function (req, res) {
-    // console.log("Just got a request!")
-    res.send("Yo!");
-});
-app.get("/requests", function (req, res) {
-    var requests = (0, lite_1.collection)(db, "requests");
-    console.log("GET REQUESTS", requests);
-});
+}); });
+app.get("/requests", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var requestsCol, docs, response;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                requestsCol = (0, lite_1.collection)(db, "requests").withConverter(converter);
+                ;
+                return [4 /*yield*/, (0, lite_1.getDocs)(requestsCol)];
+            case 1:
+                docs = _a.sent();
+                response = [];
+                docs.forEach(function (doc) { return response.push(doc.data()); });
+                console.log("REQUESTS", response);
+                return [2 /*return*/, res.status(200).send(response)];
+        }
+    });
+}); });
 // app.get('/recareas', async (req, res) => {
 //     try {
 //         const r = await axios.get("https://ridb.recreation.gov/api/v1/recareas?query=glacier%20national%20park", {
