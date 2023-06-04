@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestHeaders } from "axios";
+import axios from "axios";
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
@@ -16,12 +16,13 @@ import {
   getFirestore,
   collection,
   getDocs,
-  setDoc,
-  getDoc,
   addDoc,
-  QuerySnapshot,
+  query,
   QueryDocumentSnapshot,
+  orderBy,
+  limit,
 } from "firebase/firestore/lite";
+
 
 // Initialize Firestore through Firebase
 const firebaseConfig = {
@@ -84,35 +85,14 @@ app.get("/cron", async (req, res) => {
 });
 
 app.get("/requests", async (req, res) => {
-  const requestsCol = collection(db, "requests").withConverter(converter);
+  const requestsCol = query(collection(db, "requests").withConverter(converter), orderBy("dateTime", "desc"), limit(100));
   const docs = await getDocs<ApiRequests>(requestsCol);
   const response: ApiRequests[] = [];
 
   docs.forEach((doc) => response.push(doc.data()));
 
-  console.log("REQUESTS", response);
   return res.status(200).send(response);
 });
-// app.get('/recareas', async (req, res) => {
-//     try {
-//         const r = await axios.get("https://ridb.recreation.gov/api/v1/recareas?query=glacier%20national%20park", {
-//           headers: {
-//             apikey: "0247a97d-3793-409b-9fad-bde619422120",
-//             Accept: "application/json"
-//           }
-//         })
-//         if (r.status === 200) {
-//           return res.status(200).send(r.data)
-//         }
-//         return res.status(500).send("request error")
-//     } catch (e) {
-//       if (e instanceof AxiosError) {
-//         //  console.log(e.request)
-//          return res.status(e.status).send(e.message)
-//       }
-//      return res.status(500).send("server error")
-//     }
-// })
 
 console.log("RUN!");
 
