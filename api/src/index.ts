@@ -51,8 +51,10 @@ app.get("/cron", async (req, res) => {
       const requests = collection(db, "requests");
       await addDoc(requests, { dateTime: Date.now(), availability });
     }
+    return res.status(200).send({ dateTime: Date.now(), filteredDates })
   } catch (error) {
     console.error(error);
+    return res.status(500).send(error)
   }
 })
 
