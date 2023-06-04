@@ -41,35 +41,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = __importDefault(require("axios"));
 var express_1 = __importDefault(require("express"));
+require("dotenv/config");
 var cors_1 = __importDefault(require("cors"));
+var twilio_1 = __importDefault(require("twilio"));
 var app = (0, express_1.default)();
 app.use((0, cors_1.default)());
+var accountSid = "AC5c48c7f840859ad42c7910a11f1dd877";
+var authToken = process.env.TWILIO_AUTH_TOKEN;
+var twilioClient = (0, twilio_1.default)(accountSid, authToken);
 // Import the functions you need from the SDKs you need
 var app_1 = require("firebase/app");
 var lite_1 = require("firebase/firestore/lite");
 // Initialize Firestore through Firebase
 var firebaseConfig = {
-    apiKey: "AIzaSyCHn5Hc3YSyFDPIkJAuagznlOY_T-5936w",
+    apiKey: process.env.FIREBASE_API_KEY,
     authDomain: "campsite-che.firebaseapp.com",
     projectId: "campsite-che",
     storageBucket: "campsite-che.appspot.com",
     messagingSenderId: "8110544532",
-    appId: "1:8110544532:web:c8f811b42d0c7c160f4681",
+    appId: process.env.FIREBASE_APP_ID,
 };
 var firebaseApp = (0, app_1.initializeApp)(firebaseConfig);
 var db = (0, lite_1.getFirestore)(firebaseApp);
 var converter = {
     toFirestore: function (data) { return data; },
-    fromFirestore: function (snap) {
-        return snap.data();
-    }
+    fromFirestore: function (snap) { return snap.data(); },
 };
 app.all("/", function (req, res) {
     // console.log("Just got a request!")
-    res.send("Yo!");
+    res.send("Yooo!");
 });
-app.get("/chron", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var response, filteredDates, availability_1, requests, error_1;
+app.get("/cron", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var response, filteredDates, availability_1, requests, hasAvail, message, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -89,12 +92,21 @@ app.get("/chron", function (req, res) { return __awaiter(void 0, void 0, void 0,
                 return [4 /*yield*/, (0, lite_1.addDoc)(requests, { dateTime: Date.now(), availability: availability_1 })];
             case 2:
                 _a.sent();
+                hasAvail = Object.entries(availability_1).filter(function (date) { return date[1].remaining > 0; });
+                if (hasAvail.length) {
+                    message = "Hey! Stony Indian Lake has availability: ".concat(hasAvail
+                        .map(function (date) { return date[0] + ": " + date[1].remaining + " remaining sites"; })
+                        .join(", "));
+                    twilioClient.messages
+                        .create({ body: message, from: "+18668414666", to: "+17163615473" })
+                        .then(function (msg) { return console.log(msg.sid); });
+                }
                 _a.label = 3;
-            case 3: return [3 /*break*/, 5];
+            case 3: return [2 /*return*/, res.status(200).send({ dateTime: Date.now(), filteredDates: filteredDates })];
             case 4:
                 error_1 = _a.sent();
                 console.error(error_1);
-                return [3 /*break*/, 5];
+                return [2 /*return*/, res.status(500).send(error_1)];
             case 5: return [2 /*return*/];
         }
     });
@@ -104,37 +116,15 @@ app.get("/requests", function (req, res) { return __awaiter(void 0, void 0, void
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                requestsCol = (0, lite_1.collection)(db, "requests").withConverter(converter);
-                ;
+                requestsCol = (0, lite_1.query)((0, lite_1.collection)(db, "requests").withConverter(converter), (0, lite_1.orderBy)("dateTime", "desc"), (0, lite_1.limit)(100));
                 return [4 /*yield*/, (0, lite_1.getDocs)(requestsCol)];
             case 1:
                 docs = _a.sent();
                 response = [];
                 docs.forEach(function (doc) { return response.push(doc.data()); });
-                console.log("REQUESTS", response);
                 return [2 /*return*/, res.status(200).send(response)];
         }
     });
 }); });
-// app.get('/recareas', async (req, res) => {
-//     try {
-//         const r = await axios.get("https://ridb.recreation.gov/api/v1/recareas?query=glacier%20national%20park", {
-//           headers: {
-//             apikey: "0247a97d-3793-409b-9fad-bde619422120",
-//             Accept: "application/json"
-//           }
-//         })
-//         if (r.status === 200) {
-//           return res.status(200).send(r.data)
-//         }
-//         return res.status(500).send("request error")
-//     } catch (e) {
-//       if (e instanceof AxiosError) {
-//         //  console.log(e.request)
-//          return res.status(e.status).send(e.message)
-//       }
-//      return res.status(500).send("server error")
-//     }
-// })
 console.log("RUN!");
 app.listen(process.env.PORT || 3000);

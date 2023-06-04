@@ -3,12 +3,15 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import { ApiRequests, AvailabilityResponse } from "./types";
+import twilio from "twilio";
+
 const app = express();
 app.use(cors());
 
 const accountSid = "AC5c48c7f840859ad42c7910a11f1dd877";
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioClient = require("twilio")(accountSid, authToken);
+
+const twilioClient = twilio(accountSid, authToken);
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
@@ -74,7 +77,7 @@ app.get("/cron", async (req, res) => {
 
         twilioClient.messages
           .create({ body: message, from: "+18668414666", to: "+17163615473" })
-          .then((message) => console.log(message.sid));
+          .then((msg) => console.log(msg.sid));
       }
     }
     return res.status(200).send({ dateTime: Date.now(), filteredDates });
