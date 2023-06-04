@@ -30,10 +30,10 @@ const converter = {
 
 app.all("/", (req, res) => {
   // console.log("Just got a request!")
-  res.send("Yo!");
+  res.send("Yooo!");
 });
 
-app.get("/chron", async (req, res) => {
+app.get("/cron", async (req, res) => {
   try {
     const response = await axios.get<AvailabilityResponse>(
       "https://www.recreation.gov/api/permititinerary/4675321/division/4675321007/availability/month?month=8&year=2023"
