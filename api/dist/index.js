@@ -136,4 +136,5 @@ app.get("/requests", function (req, res) { return __awaiter(void 0, void 0, void
 //      return res.status(500).send("server error")
 //     }
 // })
+console.log("RUN!");
 app.listen(process.env.PORT || 3000);
