@@ -1,14 +1,27 @@
 import axios, { AxiosError, AxiosRequestHeaders } from "axios";
 import express from "express";
-import 'dotenv/config'
+import "dotenv/config";
 import cors from "cors";
 import { ApiRequests, AvailabilityResponse } from "./types";
 const app = express();
 app.use(cors());
 
+const accountSid = "AC5c48c7f840859ad42c7910a11f1dd877";
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioClient = require("twilio")(accountSid, authToken);
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, setDoc, getDoc, addDoc, QuerySnapshot, QueryDocumentSnapshot } from "firebase/firestore/lite";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  setDoc,
+  getDoc,
+  addDoc,
+  QuerySnapshot,
+  QueryDocumentSnapshot,
+} from "firebase/firestore/lite";
 
 // Initialize Firestore through Firebase
 const firebaseConfig = {
@@ -20,16 +33,13 @@ const firebaseConfig = {
   appId: process.env.FIREBASE_APP_ID,
 };
 
-console.log("CONFIG", firebaseConfig)
-
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 
 const converter = {
   toFirestore: (data: ApiRequests) => data,
-  fromFirestore: (snap: QueryDocumentSnapshot) =>
-    snap.data() as ApiRequests
-}
+  fromFirestore: (snap: QueryDocumentSnapshot) => snap.data() as ApiRequests,
+};
 
 app.all("/", (req, res) => {
   // console.log("Just got a request!")
@@ -53,24 +63,36 @@ app.get("/cron", async (req, res) => {
 
       const requests = collection(db, "requests");
       await addDoc(requests, { dateTime: Date.now(), availability });
+
+      const hasAvail = Object.entries(availability).filter((date) => date[1].remaining > 0);
+
+      if (hasAvail.length) {
+        const message = `Hey! Stony Indian Lake has availability: ${hasAvail
+          .map((date) => date[0] + ": " + date[1].remaining + " remaining sites")
+          .join(", ")}`;
+
+        twilioClient.messages
+          .create({ body: message, from: "+18668414666", to: "+17163615473" })
+          .then((message) => console.log(message.sid));
+      }
     }
-    return res.status(200).send({ dateTime: Date.now(), filteredDates })
+    return res.status(200).send({ dateTime: Date.now(), filteredDates });
   } catch (error) {
     console.error(error);
-    return res.status(500).send(error)
+    return res.status(500).send(error);
   }
-})
+});
 
 app.get("/requests", async (req, res) => {
-  const requestsCol = collection(db, "requests").withConverter(converter);;
+  const requestsCol = collection(db, "requests").withConverter(converter);
   const docs = await getDocs<ApiRequests>(requestsCol);
   const response: ApiRequests[] = [];
 
-  docs.forEach(doc => response.push(doc.data()))
+  docs.forEach((doc) => response.push(doc.data()));
 
-  console.log("REQUESTS", response)
-  return res.status(200).send(response)
-})
+  console.log("REQUESTS", response);
+  return res.status(200).send(response);
+});
 // app.get('/recareas', async (req, res) => {
 //     try {
 //         const r = await axios.get("https://ridb.recreation.gov/api/v1/recareas?query=glacier%20national%20park", {
@@ -92,6 +114,6 @@ app.get("/requests", async (req, res) => {
 //     }
 // })
 
-console.log("RUN!")
+console.log("RUN!");
 
 app.listen(process.env.PORT || 3000);
