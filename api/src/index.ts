@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosRequestHeaders } from "axios";
 import express from "express";
+import 'dotenv/config'
 import cors from "cors";
 import { ApiRequests, AvailabilityResponse } from "./types";
 const app = express();
@@ -11,13 +12,15 @@ import { getFirestore, collection, getDocs, setDoc, getDoc, addDoc, QuerySnapsho
 
 // Initialize Firestore through Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyCHn5Hc3YSyFDPIkJAuagznlOY_T-5936w",
+  apiKey: process.env.FIREBASE_API_KEY,
   authDomain: "campsite-che.firebaseapp.com",
   projectId: "campsite-che",
   storageBucket: "campsite-che.appspot.com",
   messagingSenderId: "8110544532",
-  appId: "1:8110544532:web:c8f811b42d0c7c160f4681",
+  appId: process.env.FIREBASE_APP_ID,
 };
+
+console.log("CONFIG", firebaseConfig)
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
