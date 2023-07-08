@@ -118,9 +118,9 @@ app.get("/cron", async (req, res) => {
             .map((date) => date[0] + ": " + date[1].remaining + " remaining sites")
             .join(", ")}`;
 
-          twilioClient.messages
-            .create({ body: message, from: "+18668414666", to: "+17163615473" })
-            .then((msg) => console.log(msg.sid));
+          // twilioClient.messages
+          //   .create({ body: message, from: "+18668414666", to: "+17163615473" })
+          //   .then((msg) => console.log(msg.sid));
         }
       }
       response.ELF = { dateTime: Date.now(), filteredDates };
