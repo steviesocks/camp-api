@@ -268,6 +268,41 @@ app.get("/cron", async (req, res) => {
       console.log("GLF error", error);
     }
 
+    // GLH REQUEST
+    try {
+      const GLH = await axios.get<AvailabilityResponse>(
+        "https://www.recreation.gov/api/permititinerary/4675321/division/4675321024/availability/month?month=8&year=2023"
+      );
+
+      const filteredDates = Object.entries(GLH.data.payload.quota_type_maps.ConstantQuotaUsageDaily).filter((entry) =>
+        ["2023-08-11"].includes(entry[0])
+      );
+      if (filteredDates.length) {
+        const availability: { [date: string]: { total: number; remaining: number } } = {};
+        filteredDates.forEach((date) => {
+          availability[date[0]] = { total: date[1].total, remaining: date[1].remaining };
+        });
+
+        const requests = collection(db, "GLH");
+        await addDoc(requests, { dateTime: Date.now(), availability });
+
+        const hasAvail = Object.entries(availability).filter((date) => date[1].remaining > 0);
+
+        if (hasAvail.length) {
+          const message = `Hey! Glenns Lake Head has availability: ${hasAvail
+            .map((date) => date[0] + ": " + date[1].remaining + " remaining sites")
+            .join(", ")}`;
+
+          twilioClient.messages
+            .create({ body: message, from: "+18668414666", to: "+17163615473" })
+            .then((msg) => console.log(msg.sid));
+        }
+      }
+      response.GLH = { dateTime: Date.now(), filteredDates };
+    } catch (error) {
+      console.log("GLH error", error);
+    }
+
     console.log("CRON RESP", response);
 
     return res.status(200).send(response);
