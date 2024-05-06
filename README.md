@@ -1,11 +1,7 @@
-# starter-express-api
+# campsite availability api
 
-This is the simplest possible nodejs api using express that responds to any request with: 
-```
-Yo!
-```
+Simple api to check campsite availability on Recreation.gov
 
-### Deploy it in 7 seconds: 
-
-[![Deploy to Cyclic](https://deploy.cyclic.app/button.svg)](https://deploy.cyclic.app/)
+- /cron endpoint checks availability for a few specific (hardcoded) sites in Glacier National Park on a few specific dates
+- /requests endpoint returns the last 50 requests for each site
 
