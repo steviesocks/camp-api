@@ -1,3 +1,4 @@
+// response body from `https://www.recreation.gov/api/permititinerary/${PERMIT_ITINERARY}/division/${site.division}/availability/${DATE_RANGE}`
 export interface AvailabilityResponse {
   //dates are YYYY-MM-DD
   payload: {
@@ -5,7 +6,7 @@ export interface AvailabilityResponse {
       [date: string]: boolean;
     };
     quota_type_maps: {
-      ConstantQuotaUsageDaily: {
+      QuotaUsageBySiteDaily: {
         [date: string]: {
           total: number;
           remaining: number;
@@ -42,4 +43,27 @@ export interface AvailabilityResponse {
 export interface ApiRequests {
   dateTime: number;
   availability: { [date: string]: { remaining: number; total: number } };
+}
+
+interface RequestsHistoryRepsonse {
+  [key: string]: {
+    dateTime: number;
+    filteredDates: [
+      string,
+      {
+        total: number;
+        remaining: number;
+        show_walkup: boolean;
+        is_hidden: boolean;
+        season_type: string;
+      }
+    ][];
+  };
+}
+
+interface Campsite {
+  shortName: string;
+  name: string;
+  dates: string[];
+  division: number;
 }
